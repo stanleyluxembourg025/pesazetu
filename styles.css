@@ -20,7 +20,7 @@
 }
 
 .bg-gradient {
-    background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e8 100%);
+    background: linear-gradient(135deg, #87ceeb, #98fb98) !important;
     min-height: 100vh;
 }
 
@@ -30,6 +30,45 @@
 
 .navbar-brand, .navbar-nav .nav-link {
     color: #fff !important;
+}
+
+.navbar-brand-fancy {
+    font-size: 1.5rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #fff, #e3f2fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar-brand img {
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand img:hover {
+    transform: scale(1.1);
+}
+
+.logo-loader {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.eligibility-text {
+    animation: fadeIn 2s ease-in-out infinite alternate;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
 }
 
 .btn-primary {
@@ -55,7 +94,7 @@
 .card {
     border: none;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    background: rgba(255,255,255,0.9);
+    background: linear-gradient(135deg, rgba(135,206,235,0.5), rgba(152,251,152,0.5));
 }
 
 .alert-success {
@@ -71,7 +110,67 @@
 }
 
 .table {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.95);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table thead th {
+    background: linear-gradient(90deg, #42a5f5 0%, #66bb6a 100%);
+    color: white;
+    border: none;
+}
+
+.custom-table tbody tr:nth-child(even) {
+    background-color: rgba(135,206,235,0.5) !important;
+}
+
+.custom-table tbody tr:nth-child(odd) {
+    background-color: rgba(152,251,152,0.5) !important;
+}
+
+#till-number {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.btn-custom {
+    padding: 8px 16px;
+    font-size: 1em;
+    border-radius: 4px;
+}
+
+/* Toast styles */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+.toast {
+    background: linear-gradient(135deg, #87ceeb, #98fb98) !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+.toast.bg-success {
+    background: linear-gradient(135deg, #4caf50, #66bb6a) !important;
+}
+
+.toast.bg-danger {
+    background: linear-gradient(135deg, #f44336, #e57373) !important;
+}
+
+.toast.bg-warning {
+    background: linear-gradient(135deg, #ff9800, #ffb74d) !important;
 }
 
 /* Mobile responsiveness */

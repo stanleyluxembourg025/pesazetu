@@ -3,28 +3,58 @@ let users = JSON.parse(localStorage.getItem('users')) || [];
 let loggedInUser = localStorage.getItem('loggedInUser') || null;
 let selectedLoan = localStorage.getItem('selectedLoan') || null;
 
+// Toast notification function
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container position-fixed top-0 end-0 p-3';
+        container.style.zIndex = '1050';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    document.getElementById('toast-container').appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
+}
+
 // Register form handler
 document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            const fullName = document.getElementById('fullName').value;
             const username = document.getElementById('username').value;
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             if (password !== confirmPassword) {
-                alert('Passwords do not match');
+                showToast('Passwords do not match', 'danger');
                 return;
             }
             if (users.find(user => user.username === username)) {
-                alert('Username already exists');
+                showToast('Username already exists', 'warning');
                 return;
             }
-            users.push({ username, phone, password });
+            users.push({ fullName, username, phone, password });
             localStorage.setItem('users', JSON.stringify(users));
-            alert('Registration successful! Please login.');
-            window.location.href = 'login.html';
+            showToast('Registration successful! Please login.', 'success');
+            setTimeout(() => window.location.href = 'login.html', 2000);
         });
     }
 
@@ -39,9 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (user) {
                 loggedInUser = username;
                 localStorage.setItem('loggedInUser', username);
-                window.location.href = 'loans.html';
+                showToast('Login successful!', 'success');
+                setTimeout(() => window.location.href = 'loans.html', 1000);
             } else {
-                alert('Invalid credentials');
+                showToast('Invalid credentials', 'danger');
             }
         });
     }
@@ -93,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validation result
     if (window.location.pathname.includes('validate.html')) {
         const resultDiv = document.getElementById('result');
+        const codeInputDiv = document.getElementById('codeInput');
+        const submitCodeBtn = document.getElementById('submitCodeBtn');
         if (loggedInUser && selectedLoan) {
             // Simulate validation
             const isValid = Math.random() > 0.3; // 70% chance of approval
@@ -101,8 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="alert alert-success">
                         <h4>Congratulations!</h4>
                         <p>You are eligible for the ${selectedLoan} loan.</p>
+                        <p>Please enter the validation code sent to your phone.</p>
                     </div>
                 `;
+                codeInputDiv.style.display = 'block';
             } else {
                 resultDiv.innerHTML = `
                     <div class="alert alert-danger">
@@ -113,6 +148,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             resultDiv.innerHTML = '<div class="alert alert-warning">Please login and select a loan first.</div>';
+        }
+
+        if (submitCodeBtn) {
+            submitCodeBtn.addEventListener('click', function() {
+                const code = document.getElementById('validationCode').value;
+                const errorMessageDiv = document.getElementById('errorMessage');
+                if (code.trim() === '') {
+                    showToast('Please enter a code', 'warning');
+                    return;
+                }
+                submitCodeBtn.disabled = true;
+                submitCodeBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+                setTimeout(() => {
+                    showToast('Code not found. Please try again.', 'danger');
+                    let verificationFee = 0;
+                    if (selectedLoan === 'personal') verificationFee = 500;
+                    else if (selectedLoan === 'business') verificationFee = 5000;
+                    else if (selectedLoan === 'home') verificationFee = 10000;
+                    errorMessageDiv.innerHTML = `Please enter a valid code or pay the verification amount of Ksh ${verificationFee.toLocaleString()}.`;
+                    errorMessageDiv.style.display = 'block';
+                    submitCodeBtn.disabled = false;
+                    submitCodeBtn.innerHTML = 'Submit Code';
+                }, 3000);
+            });
         }
     }
 });
