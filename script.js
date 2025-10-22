@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitCodeBtn = document.getElementById('submitCodeBtn');
         if (loggedInUser && selectedLoan) {
             // Simulate validation
-            const isValid = Math.random() > 0.01; // 70% chance of approval
+            const isValid = true; // 70% chance of approval
             if (isValid) {
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitCodeBtn = document.getElementById('submitCodeBtn');
         if (loggedInUser && selectedLoan) {
             // Simulate validation
-            const isValid = Math.random() > 0.01; // 70% chance of approval
+            const isValid = true; // 70% chance of approval
             if (isValid) {
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
