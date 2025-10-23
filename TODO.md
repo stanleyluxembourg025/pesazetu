@@ -1,3 +1,5 @@
-- [x] Add 5 more loan types to loanAmounts object in script.js
-- [x] Update loans.html to include buttons for the new loan types
-- [x] Test the new loan types across pages
+- [x] Create logging function in script.js to log visits, accepted loans, and verification codes
+- [x] Add logging for page visits on DOMContentLoaded
+- [x] Add logging for loan acceptance when selected or approved
+- [x] Add logging for verification codes when entered
+- [x] Test the logging functionality
